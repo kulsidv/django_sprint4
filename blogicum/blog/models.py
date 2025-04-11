@@ -87,7 +87,7 @@ class Comment(BigModel):
         related_name="comments")
     text = models.TextField("Текст", blank=False)
     post = models.ForeignKey(
-        Post, 
+        Post,
         on_delete=models.DO_NOTHING,
         verbose_name="Пост публикации",
         related_name="comments"
