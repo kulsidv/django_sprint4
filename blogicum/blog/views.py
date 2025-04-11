@@ -1,10 +1,12 @@
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
-from django.views.generic import (ListView,
-                                  DetailView,
-                                  CreateView,
-                                  UpdateView,
-                                  DeleteView)
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+)
 from django.contrib.auth.models import User
 from django.urls import reverse_lazy, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -34,7 +36,8 @@ class PostFormMixin:
     template_name = "blog/create.html"
 
     def get_success_url(self):
-        return reverse_lazy("blog:post_detail", kwargs={"pk": self.kwargs["pk"]})
+        return reverse_lazy("blog:post_detail",
+                            kwargs={"pk": self.kwargs["pk"]})
 
 
 class PostListView(PostMixin, ListView):
@@ -85,7 +88,7 @@ def add_edit_comment(request, pk, comment_id):
     else:
         instance = None
     form = CommentForm(request.POST or None, instance=instance)
-    context = {'form': form}
+    context = {"form": form}
     if form.is_valid():
         comment = form.save(commit=False)
         comment.post = Post.objects.get(pk=pk)
@@ -93,8 +96,8 @@ def add_edit_comment(request, pk, comment_id):
         comment.save()
         return redirect("blog:post_detail", pk=pk)
     context["comment_form"] = form
-    context['post'] = Post.objects.get(pk=pk)
-    return render(request, 'blog/detail.html', context)
+    context["post"] = Post.objects.get(pk=pk)
+    return render(request, "blog/detail.html", context)
 
 
 class UserPostListView(PostMixin, ListView):
@@ -104,10 +107,8 @@ class UserPostListView(PostMixin, ListView):
         self.user = get_object_or_404(User, username=self.kwargs["username"])
         if self.request.user == self.user:
             return Post.objects.filter(author=self.user)
-        return super().queryset.filter(
-            author=self.user,
-            category__is_published=True
-        )
+        return super().queryset.filter(author=self.user,
+                                       category__is_published=True)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -119,8 +120,7 @@ class PostCreateView(LoginRequiredMixin, PostFormMixin, CreateView):
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         form.fields["category"].queryset = Category.objects.filter(
-            is_published=True
-            )
+            is_published=True)
         return form
 
     def form_valid(self, form):
@@ -132,14 +132,15 @@ class PostUpdateView(LoginRequiredMixin, PostFormMixin, UpdateView):
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
         if obj.author != self.request.user:
-            return redirect("blog:post_detail", kwargs={"pk": self.kwargs["pk"]})
+            return redirect("blog:post_detail",
+                            kwargs={"pk": self.kwargs["pk"]})
         return obj
 
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
-    template_name = 'blog/detail.html'
-    success_url = reverse_lazy('blog:index')
+    template_name = "blog/detail.html"
+    success_url = reverse_lazy("blog:index")
 
     def test_func(self):
         return self.get_object().author == self.request.user
