@@ -88,14 +88,14 @@ class Comment(BigModel):
     text = models.TextField("Текст", blank=False)
     post = models.ForeignKey(
         Post,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         verbose_name="Пост публикации",
         related_name="comments"
     )
 
     class Meta:
         verbose_name = "комментарий"
-        verbose_name_plural = "Категории"
+        verbose_name_plural = "Комментарии"
 
     def __str__(self):
-        return self.text[20] + '...'
+        return self.text[:20] + '...' if len(self.text) > 20 else self.text
