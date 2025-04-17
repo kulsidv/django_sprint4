@@ -44,7 +44,7 @@ class PostListView(PostMixin, ListView):
     template_name = "index.html"
 
     def get_queryset(self):
-        return super().queryset.filter(category__is_published=True)
+        return super().get_queryset().filter(category__is_published=True)
 
 
 class CategoryPostListView(PostMixin, ListView):
@@ -54,7 +54,7 @@ class CategoryPostListView(PostMixin, ListView):
         self.category = get_object_or_404(
             Category, slug=self.kwargs["category_slug"], is_published=True
         )
-        return super().queryset.filter(category=self.category.pk)
+        return super().get_queryset().filter(category=self.category.pk)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -66,7 +66,7 @@ class PostDetailView(PostMixin, DetailView):
     template_name = "blog/detail.html"
 
     def get_queryset(self):
-        return super().queryset.filter(category__is_published=True)
+        return super().get_queryset().filter(category__is_published=True)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -107,8 +107,10 @@ class UserPostListView(PostMixin, ListView):
         self.user = get_object_or_404(User, username=self.kwargs["username"])
         if self.request.user == self.user:
             return Post.objects.filter(author=self.user)
-        return super().queryset.filter(author=self.user,
-                                       category__is_published=True)
+        return super().get_queryset().filter(
+            author=self.user,
+            category__is_published=True
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
