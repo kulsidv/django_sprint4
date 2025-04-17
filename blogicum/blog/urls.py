@@ -8,8 +8,10 @@ urlpatterns = [
     path("posts/<int:pk>/",
          views.PostDetailView.as_view(),
          name="post_detail"),
-    path("posts/create/", views.PostCreateView.as_view(), name="create"),
-    path("posts/<int:pk>/edit", views.PostUpdateView.as_view(), name="edit"),
+    path("posts/create/", views.PostCreateView.as_view(), name="create_post"),
+    path("posts/<int:pk>/edit",
+         views.PostUpdateView.as_view(),
+         name="edit_post"),
     path(
         "category/<slug:category_slug>/",
         views.CategoryPostListView.as_view(),
@@ -25,7 +27,7 @@ urlpatterns = [
          name='edit_comment'),
     path('posts/<int:pk>/delete/',
          views.PostDeleteView.as_view(),
-         name='delete'),
+         name='delete_post'),
     path('posts/<int:pk>/delete_comment/<comment_id>/',
          views.delete_comment,
          name='delete_comment')
