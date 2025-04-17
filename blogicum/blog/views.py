@@ -70,7 +70,7 @@ class PostDetailView(PostMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["form"] = CommentForm
+        context["form"] = CommentForm()
         context["comments"] = Comment.objects.filter(
             post=self.get_object()).order_by(
             "created_at"
@@ -97,7 +97,9 @@ def add_edit_comment(request, pk, comment_id):
         return redirect("blog:post_detail", pk=pk)
     context["comment_form"] = form
     context["post"] = Post.objects.get(pk=pk)
-    context["comments"] = Comment.objects.filter(post=context["post"])
+    context["comments"] = Comment.objects.filter(
+        post=context["post"]
+    ).order_by("created_at")
     return render(request, "blog/detail.html", context)
 
 
