@@ -19,7 +19,7 @@ urlpatterns = [
     ),
     path("profile/<slug:username>/", views.UserPostListView.as_view(),
          name="profile"),
-    path("posts/<int:pk>/comment/<int:comment_id>",
+    path("posts/<int:pk>/comment/",
          views.add_edit_comment,
          name='add_comment'),
     path("posts/<int:pk>/edit_comment/<int:comment_id>",
