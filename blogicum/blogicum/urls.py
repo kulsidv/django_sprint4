@@ -3,7 +3,7 @@ from django.urls import include, path, reverse_lazy
 from django.contrib.auth.forms import UserCreationForm
 from django.views.generic.edit import CreateView
 from django.conf.urls.static import static
-import settings
+import blogicum.settings as settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),

@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.views.generic import (
     ListView,
@@ -8,7 +8,7 @@ from django.views.generic import (
     DeleteView,
 )
 from django.contrib.auth.models import User
-from django.urls import reverse_lazy, redirect
+from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .models import Post, Category, Comment
