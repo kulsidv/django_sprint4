@@ -80,11 +80,11 @@ class PostDetailView(PostMixin, DetailView):
 
 def add_edit_comment(request, pk, comment_id):
     if not request.user.is_authenticated:
-        redirect("registration/login.html")
+        return redirect("templates/registration/login.html")
     if comment_id is not None:
         comment = get_object_or_404(Comment, pk=comment_id)
         if comment.author != request.user:
-            redirect("blog:post_detail", pk=pk)
+            return redirect("blog:post_detail", pk=pk)
     else:
         instance = None
     form = CommentForm(request.POST or None, instance=instance)
@@ -97,6 +97,7 @@ def add_edit_comment(request, pk, comment_id):
         return redirect("blog:post_detail", pk=pk)
     context["comment_form"] = form
     context["post"] = Post.objects.get(pk=pk)
+    context["comments"] = Comment.objects.filter(post=context["post"])
     return render(request, "blog/detail.html", context)
 
 
