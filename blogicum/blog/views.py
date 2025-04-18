@@ -10,6 +10,7 @@ from django.views.generic import (
 from django.contrib.auth.models import User
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.forms import UserChangeForm
 
 from .models import Post, Category, Comment
 from .forms import CommentForm
@@ -32,16 +33,16 @@ class PostMixin:
 
 class PostFormMixin:
     model = Post
-    exclude = ("author", "is_published", "created_at")
+    fields = ["title", "text", "pub_date", "location", "category", "image"]
     template_name = "blog/create.html"
 
     def get_success_url(self):
         return reverse_lazy("blog:post_detail",
-                            kwargs={"pk": self.kwargs["pk"]})
+                            kwargs={"pk": self.object.pk})
 
 
 class PostListView(PostMixin, ListView):
-    template_name = "index.html"
+    template_name = "blog/index.html"
 
     def get_queryset(self):
         return super().get_queryset().filter(category__is_published=True)
@@ -78,22 +79,22 @@ class PostDetailView(PostMixin, DetailView):
         return context
 
 
-def add_edit_comment(request, pk, comment_id):
+def add_edit_comment(request, pk, comment_id=None):
     if not request.user.is_authenticated:
         return redirect("templates/registration/login.html")
     if comment_id is not None:
-        comment = get_object_or_404(Comment, pk=comment_id)
-        if comment.author != request.user:
+        instance = get_object_or_404(Comment, pk=comment_id)
+        if instance.author != request.user:
             return redirect("blog:post_detail", pk=pk)
     else:
         instance = None
     form = CommentForm(request.POST or None, instance=instance)
     context = {"form": form}
     if form.is_valid():
-        comment = form.save(commit=False)
-        comment.post = Post.objects.get(pk=pk)
-        comment.author = request.user
-        comment.save()
+        instance = form.save(commit=False)
+        instance.post = Post.objects.get(pk=pk)
+        instance.author = request.user
+        instance.save()
         return redirect("blog:post_detail", pk=pk)
     context["comment_form"] = form
     context["post"] = Post.objects.get(pk=pk)
@@ -159,3 +160,18 @@ def delete_comment(request, pk, comment_id):
         redirect("blog:post_detail", pk=pk)
     Comment.objects.get(pk=comment_id).delete()
     return redirect("blog:post_detail", pk=pk)
+
+
+class UserUpdateView(LoginRequiredMixin, UpdateView):
+    model = User
+    # form_class = UserChangeForm
+    fields = ("username", "first_name", "last_name", "email")
+    template_name = "registration/registration_form.html"
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def get_success_url(self):
+        print(self.object.username)
+        return reverse_lazy("blog:profile", kwargs={"username":
+                                                    self.object.username})

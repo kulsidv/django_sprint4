@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from core.models import BigModel
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -14,6 +15,7 @@ class Post(BigModel):
             "Если установить дату и время в будущем — "
             "можно делать отложенные публикации."
         ),
+        default=timezone.now
     )
     author = models.ForeignKey(
         User,
@@ -69,7 +71,7 @@ class Category(BigModel):
 
 
 class Location(BigModel):
-    name = models.CharField("Название места", max_length=256)
+    title = models.CharField("Название места", max_length=256)
 
     class Meta:
         verbose_name = "местоположение"
