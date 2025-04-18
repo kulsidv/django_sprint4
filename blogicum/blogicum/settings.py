@@ -136,6 +136,8 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+TEMPLATES_DIR = BASE_DIR / 'templates'
+
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
 LOGIN_REDIRECT_URL = 'blog:index'

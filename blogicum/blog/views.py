@@ -105,6 +105,7 @@ def add_edit_comment(request, pk, comment_id=None):
 
 class UserPostListView(PostMixin, ListView):
     template_name = "blog/profile.html"
+    ordering = "-pub_date"
 
     def get_queryset(self):
         self.user = get_object_or_404(User, username=self.kwargs["username"])
