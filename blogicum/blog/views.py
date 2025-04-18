@@ -10,6 +10,7 @@ from django.views.generic import (
 from django.contrib.auth.models import User
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db.models import Count
 
 from .models import Post, Category, Comment
 from .forms import CommentForm
@@ -21,13 +22,12 @@ class PostMixin:
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = Post.objects.filter(
+        return Post.objects.filter(
             pub_date__lte=timezone.now(),
             is_published=True
+        ).annotate(
+            comment_count=Count('comments')
         )
-        for post in queryset:
-            post.comment_count = Comment.objects.filter(post=post).count()
-        return queryset
 
 
 class PostFormMixin:
@@ -48,7 +48,7 @@ class PostListView(PostMixin, ListView):
 
 
 class CategoryPostListView(PostMixin, ListView):
-    template_name = "category.html"
+    template_name = "blog/category.html"
 
     def get_queryset(self):
         self.category = get_object_or_404(
