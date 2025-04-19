@@ -15,7 +15,7 @@ class Post(BigModel):
             "Если установить дату и время в будущем — "
             "можно делать отложенные публикации."
         ),
-        default=timezone.now
+        default=timezone.now()
     )
     author = models.ForeignKey(
         User,

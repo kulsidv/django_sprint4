@@ -24,7 +24,6 @@ class PostMixin:
 
     def get_queryset(self):
         return Post.objects.filter(
-            pub_date__lte=timezone.now(),
             is_published=True
         ).annotate(
             comment_count=Count('comments')
@@ -45,7 +44,8 @@ class PostListView(PostMixin, ListView):
     template_name = "blog/index.html"
 
     def get_queryset(self):
-        return super().get_queryset().filter(category__is_published=True)
+        return super().get_queryset().filter(category__is_published=True,
+                                             pub_date__lte=timezone.now())
 
 
 class CategoryPostListView(PostMixin, ListView):
@@ -113,8 +113,9 @@ class UserPostListView(PostMixin, ListView):
             return Post.objects.filter(author=self.user)
         return super().get_queryset().filter(
             author=self.user,
-            category__is_published=True
-        )
+            category__is_published=True,
+            pub_date__lte=timezone.now()
+        ).order_by("-pub_date")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
