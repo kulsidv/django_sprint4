@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Count
+from django.contrib.auth.decorators import login_required
 
 from .models import Post, Category, Comment
 from .forms import CommentForm
@@ -78,9 +79,8 @@ class PostDetailView(PostMixin, DetailView):
         return context
 
 
+@login_required
 def add_edit_comment(request, pk, comment_id=None):
-    if not request.user.is_authenticated:
-        return redirect("templates/registration/login.html")
     if comment_id is not None:
         instance = get_object_or_404(Comment, pk=comment_id)
         if instance.author != request.user:
@@ -152,6 +152,7 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.get_object().author == self.request.user
 
 
+@login_required
 def delete_comment(request, pk, comment_id):
     if not request.user.is_authenticated:
         redirect("registration/login.html")
@@ -164,7 +165,6 @@ def delete_comment(request, pk, comment_id):
 
 class UserUpdateView(LoginRequiredMixin, UpdateView):
     model = User
-    # form_class = UserChangeForm
     fields = ("username", "first_name", "last_name", "email")
     template_name = "registration/registration_form.html"
 
