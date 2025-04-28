@@ -144,13 +144,6 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         return self.get_object().author == self.request.user
 
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        context = self.get_context_data(object=self.object)
-        
-        form = PostForm(instance=self.object)
-        context['form'] = form
-
 
 @login_required
 def delete_comment(request, pk, comment_id):
