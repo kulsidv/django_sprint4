@@ -66,7 +66,7 @@ class CategoryPostListView(PostMixin, ListView):
 
 
 class PostDetailView(PostMixin, DetailView):
-    template_name = "blog/create.html"
+    template_name = "blog/detail.html"
 
     def get_queryset(self):
         return super().get_queryset().filter(category__is_published=True)
@@ -138,18 +138,11 @@ class PostUpdateView(LoginRequiredMixin, PostFormMixin, UpdateView):
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
-    template_name = "blog/detail.html"
+    template_name = "blog/create.html"
     success_url = reverse_lazy("blog:index")
 
     def test_func(self):
         return self.get_object().author == self.request.user
-    
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        context = self.get_context_data(object=self.object)
-        
-        form = PostForm(instance=self.object)
-        context['form'] = form
 
 
 @login_required
