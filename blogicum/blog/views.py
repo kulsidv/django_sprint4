@@ -126,6 +126,10 @@ class UserPostListView(PostMixin, ListView):
 
 
 class PostCreateView(LoginRequiredMixin, PostFormMixin, CreateView):
+    def get_success_url(self):
+        return reverse_lazy("blog:profile",
+                            kwargs={"username": self.object.author})
+
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         form.fields["category"].queryset = Category.objects.filter(
@@ -158,12 +162,10 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 @login_required
 def delete_comment(request, pk, comment_id):
     comment = get_object_or_404(Comment, pk=comment_id)
-    form = CommentForm(initial={'text': comment.text})
     if comment.author != request.user:
         return redirect("blog:post_detail", pk=pk)
     if request.method == 'GET':
-        return render(request, "blog/comment.html", {"comment": comment,
-                                                     "form": form})
+        return render(request, "blog/comment.html", {"comment": comment})
     else:
         Comment.objects.get(pk=comment_id).delete()
         return redirect("blog:post_detail", pk=pk)
