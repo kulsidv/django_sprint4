@@ -37,10 +37,6 @@ class PostFormMixin:
     fields = ["title", "text", "pub_date", "location", "category", "image"]
     template_name = "blog/create.html"
 
-    def get_success_url(self):
-        return reverse_lazy("blog:post_detail",
-                            kwargs={"pk": self.object.pk})
-
 
 class PostListView(PostMixin, ListView):
     template_name = "blog/index.html"
@@ -83,27 +79,37 @@ class PostDetailView(PostMixin, DetailView):
 
 
 @login_required
-def add_edit_comment(request, pk, comment_id=None):
-    if comment_id is not None:
-        instance = get_object_or_404(Comment, pk=comment_id)
-        if instance.author != request.user:
-            return redirect("blog:post_detail", pk=pk)
-    else:
-        instance = None
-    form = CommentForm(request.POST or None, instance=instance)
-    context = {"form": form}
+def add_comment(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    form = CommentForm(request.POST or None)
     if form.is_valid():
-        instance = form.save(commit=False)
-        instance.post = Post.objects.get(pk=pk)
-        instance.author = request.user
-        instance.save()
+        comment = form.save(commit=False)
+        comment.post = post
+        comment.author = request.user
+        comment.save()
         return redirect("blog:post_detail", pk=pk)
-    context["comment_form"] = form
-    context["post"] = Post.objects.get(pk=pk)
-    context["comments"] = Comment.objects.filter(
-        post=context["post"]
-    ).order_by("created_at")
+    context = {
+        "post": post,
+        "form": form,
+        "comments": Comment.objects.filter(post=post).order_by("created_at")
+    }
     return render(request, "blog/detail.html", context)
+
+
+@login_required
+def edit_comment(request, pk, comment_id):
+    comment = get_object_or_404(Comment, pk=comment_id)
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST, instance=comment)
+        if form.is_valid():
+            form.save()
+            return redirect('blog:post_detail', pk=pk)
+    else:
+        form = CommentForm(instance=comment)
+
+    return render(request, 'blog/comment.html',
+                  {'form': form, 'comment': comment})
 
 
 class UserPostListView(PostMixin, ListView):
@@ -149,6 +155,10 @@ class PostUpdateView(LoginRequiredMixin, PostFormMixin, UpdateView):
                             kwargs={"pk": self.kwargs["pk"]})
         return obj
 
+    def get_success_url(self):
+        return reverse_lazy("blog:post_detail",
+                            kwargs={"pk": self.object.pk})
+
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
@@ -157,6 +167,10 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         return self.get_object().author == self.request.user
+
+    def get_success_url(self):
+        return reverse_lazy("blog:profile",
+                            kwargs={"username": self.object.author})
 
 
 @login_required

@@ -24,11 +24,11 @@ urlpatterns = [
     ),
     path("profile/<str:username>/", views.UserPostListView.as_view(),
          name="profile"),
-    path("posts/<int:pk>/comment/", views.add_edit_comment,
+    path("posts/<int:pk>/comment/", views.add_comment,
          name="add_comment"),
     path(
         "posts/<int:pk>/edit_comment/<int:comment_id>",
-        views.add_edit_comment,
+        views.edit_comment,
         name="edit_comment",
     ),
     path("posts/<int:pk>/delete/", views.PostDeleteView.as_view(),
