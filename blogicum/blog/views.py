@@ -14,12 +14,12 @@ from django.db.models import Count
 from django.contrib.auth.decorators import login_required
 
 from .models import Post, Category, Comment
-from .forms import CommentForm
+from .forms import CommentForm, PostForm
 
 
 class PostMixin:
     model = Post
-    ordering = "-created_at"
+    ordering = "-pub_date"
     paginate_by = 10
 
     def get_queryset(self):
@@ -27,6 +27,8 @@ class PostMixin:
             is_published=True
         ).annotate(
             comment_count=Count('comments')
+        ).order_by(
+            self.ordering
         )
 
 
@@ -64,19 +66,10 @@ class CategoryPostListView(PostMixin, ListView):
 
 
 class PostDetailView(PostMixin, DetailView):
-    template_name = "blog/detail.html"
+    template_name = "blog/create.html"
 
     def get_queryset(self):
         return super().get_queryset().filter(category__is_published=True)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["form"] = CommentForm()
-        context["comments"] = Comment.objects.filter(
-            post=self.get_object()).order_by(
-            "created_at"
-        )
-        return context
 
 
 @login_required
@@ -105,7 +98,6 @@ def add_edit_comment(request, pk, comment_id=None):
 
 class UserPostListView(PostMixin, ListView):
     template_name = "blog/profile.html"
-    ordering = "-pub_date"
 
     def get_queryset(self):
         self.user = get_object_or_404(User, username=self.kwargs["username"])
@@ -115,7 +107,7 @@ class UserPostListView(PostMixin, ListView):
             author=self.user,
             category__is_published=True,
             pub_date__lte=timezone.now()
-        ).order_by("-pub_date")
+        ).order_by(self.ordering)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -151,17 +143,27 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         return self.get_object().author == self.request.user
+    
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(object=self.object)
+        
+        form = PostForm(instance=self.object)
+        context['form'] = form
 
 
 @login_required
 def delete_comment(request, pk, comment_id):
-    if not request.user.is_authenticated:
-        redirect("registration/login.html")
     comment = get_object_or_404(Comment, pk=comment_id)
+    form = CommentForm(initial={'text': comment.text})
     if comment.author != request.user:
-        redirect("blog:post_detail", pk=pk)
-    Comment.objects.get(pk=comment_id).delete()
-    return redirect("blog:post_detail", pk=pk)
+        return redirect("blog:post_detail", pk=pk)
+    if request.method == 'GET':
+        return render(request, "blog/comment.html", {"comment": comment,
+                                                     "form": form})
+    else:
+        Comment.objects.get(pk=comment_id).delete()
+        return redirect("blog:post_detail", pk=pk)
 
 
 class UserUpdateView(LoginRequiredMixin, UpdateView):
