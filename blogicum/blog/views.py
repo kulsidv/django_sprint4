@@ -14,7 +14,7 @@ from django.db.models import Count
 from django.contrib.auth.decorators import login_required
 
 from .models import Post, Category, Comment
-from .forms import CommentForm, PostForm
+from .forms import CommentForm
 
 
 class PostMixin:
