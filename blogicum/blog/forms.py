@@ -4,7 +4,7 @@ from .models import Comment
 
 
 class CommentForm(forms.ModelForm):
-    text = forms.CharField(
+    text = forms.Textarea(
         label="Текст комментария",
     )
 
