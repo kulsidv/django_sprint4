@@ -57,7 +57,8 @@ class CategoryPostListView(PostMixin, ListView):
         self.category = get_object_or_404(
             Category, slug=self.kwargs["category_slug"], is_published=True
         )
-        return super().get_queryset().filter(category=self.category.pk)
+        return super().get_queryset().filter(category=self.category.pk,
+                                             pub_date__lte=timezone.now())
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -70,6 +71,15 @@ class PostDetailView(PostMixin, DetailView):
 
     def get_queryset(self):
         return super().get_queryset().filter(category__is_published=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = CommentForm()
+        context["comments"] = Comment.objects.filter(
+            post=self.get_object()).order_by(
+            "created_at"
+        )
+        return context
 
 
 @login_required
