@@ -102,7 +102,7 @@ def add_comment(request, post_id):
 def edit_comment(request, post_id, comment_id):
     comment = get_object_or_404(Comment, pk=comment_id)
 
-    if comment.author != request.user.username:
+    if comment.author != request.user:
         return redirect("blog:post_detail", post_id=post_id)
 
     if request.method == 'POST':
