@@ -18,6 +18,7 @@ from .forms import CommentForm
 
 
 class PostMixin:
+    pk_url_kwarg = 'post_id'
     model = Post
     ordering = "-pub_date"
     paginate_by = 10
@@ -33,6 +34,7 @@ class PostMixin:
 
 
 class PostFormMixin:
+    pk_url_kwarg = 'post_id'
     model = Post
     fields = ["title", "text", "pub_date", "location", "category", "image"]
     template_name = "blog/create.html"
@@ -87,7 +89,7 @@ def add_comment(request, post_id):
         comment.post = post
         comment.author = request.user
         comment.save()
-        return redirect("blog:post_detail", pk=post_id)
+        return redirect("blog:post_detail", post_id=post_id)
     context = {
         "post": post,
         "form": form,
@@ -104,7 +106,7 @@ def edit_comment(request, post_id, comment_id):
         form = CommentForm(request.POST, instance=comment)
         if form.is_valid():
             form.save()
-            return redirect('blog:post_detail', pk=post_id)
+            return redirect('blog:post_detail', post_id=post_id)
     else:
         form = CommentForm(instance=comment)
 
@@ -152,7 +154,7 @@ class PostUpdateView(LoginRequiredMixin, PostFormMixin, UpdateView):
         obj = super().get_object(queryset)
         if obj.author != self.request.user:
             return redirect("blog:post_detail",
-                            kwargs={"post_id": self.kwargs["post_id"]})
+                            post_id=obj.pk)
         return obj
 
     def get_success_url(self):
@@ -161,6 +163,7 @@ class PostUpdateView(LoginRequiredMixin, PostFormMixin, UpdateView):
 
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    pk_url_kwarg = 'post_id'
     model = Post
     template_name = "blog/create.html"
     success_url = reverse_lazy("blog:index")
@@ -177,12 +180,12 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 def delete_comment(request, post_id, comment_id):
     comment = get_object_or_404(Comment, pk=comment_id)
     if comment.author != request.user:
-        return redirect("blog:post_detail", pk=post_id)
+        return redirect("blog:post_detail", post_id=post_id)
     if request.method == 'GET':
         return render(request, "blog/comment.html", {"comment": comment})
     else:
         Comment.objects.get(pk=comment_id).delete()
-        return redirect("blog:post_detail", pk=post_id)
+        return redirect("blog:post_detail", post_id=post_id)
 
 
 class UserUpdateView(LoginRequiredMixin, UpdateView):
