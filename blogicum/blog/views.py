@@ -153,11 +153,11 @@ class PostCreateView(LoginRequiredMixin, PostFormMixin, CreateView):
 
 
 class PostUpdateView(LoginRequiredMixin, PostFormMixin, UpdateView):
-    def get_object(self, queryset=None):
-        obj = super().get_object(queryset)
-        if obj.author != self.request.user:
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.author != request.user:
             return redirect("blog:post_detail", post_id=obj.pk)
-        return obj
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy("blog:post_detail",
