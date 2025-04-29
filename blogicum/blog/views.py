@@ -156,8 +156,7 @@ class PostUpdateView(LoginRequiredMixin, PostFormMixin, UpdateView):
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
         if obj.author != self.request.user:
-            return redirect("blog:post_detail",
-                            post_id=self.kwargs["post_id"])
+            return redirect("blog:post_detail", post_id=obj.pk)
         return obj
 
     def get_success_url(self):
