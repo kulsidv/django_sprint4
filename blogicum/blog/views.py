@@ -68,6 +68,9 @@ class PostDetailView(PostMixin, DetailView):
     template_name = "blog/detail.html"
 
     def get_queryset(self):
+        post = get_object_or_404(Post, pk=self.kwargs["post_id"])
+        if self.request.user == post.author:
+            return Post.objects.filter(author=self.request.user)
         return super().get_queryset().filter(category__is_published=True)
 
     def get_context_data(self, **kwargs):
